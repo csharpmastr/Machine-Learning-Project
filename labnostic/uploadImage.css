@@ -1,0 +1,164 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body{
+    background-color: #FFC857;
+  }
+
+  header{
+    height: 80px;
+    display: flex;
+    align-items: center;
+    padding: 1em;
+  }
+
+  /*logo*/
+  .logo img{
+    height: 60px;
+    width: 60px;
+  }
+
+  /*logo name*/
+  .name{
+    margin-left: 1em;
+    font-family: 'Rubik One';
+    color: #2E4052;
+  }
+
+  .inputFile{
+    display: none;
+  }
+
+  /* Centering the label */
+  label {
+    height: 180px;
+    width: 180px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    margin-bottom: 10px;
+    font-size: 150px;
+    background-color: #FFC857;
+    cursor: pointer;
+  }
+
+  main {
+    font-family: 'Roboto Mono';
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Align items horizontally in the center */
+    justify-content: center; /* Align items vertically in the center */
+    border: 2px solid;
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px 20px;
+    height: 850px;
+    width: 1800px;
+    margin-left: 60px;
+  }
+/*upload button*/
+  #upload{
+    background-color: #2E4052;
+    justify-content: center;
+    padding: 10px 100px;
+    height: 110px;
+    width: 270px;
+    font-family: 'Roboto Mono';
+    font-size: 30px;
+    color: white;
+    overflow: visible;
+    margin-top: 20px; /* Add margin for spacing */
+    margin-left: 110px;
+    margin-bottom: 1em;
+  }
+/*image upload*/
+  #upload input[type="file"]{
+    cursor: pointer;
+    position: absolute;
+    transform: scale(5);
+    opacity: 0;
+  }
+
+  .chosenImage{
+    color: black;
+    font-family: 'Roboto Mono';
+    display: block;  /* Make it a block element to occupy space on a new line */
+    position: relative;
+    font-size: 20px;
+  }
+
+  button{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Roboto Mono';
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    -webkit-transition-duration: 0.3s;
+    transition-duration: 0.3s;
+    -webkit-transition-property: box-shadow, transform;
+    transition-property: box-shadow, transform;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+  }
+
+  /*button effect*/
+  button:hover, button:focus, button:active{
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    -webkit-transform: scale(1.1);
+    transform: scale(1.1);
+  }
+
+/*upload icon*/
+  #upload img{
+    height: 50px;
+    width: 50px;
+    margin-right: 1em;
+  }
+
+  .bar{
+    height: 50px;
+    width: 500px;
+    background: #80808073;
+    margin-top: 1em;
+    margin-bottom: 10px;
+  }
+
+  .progress{
+    background-color: #FFC857;
+    height: 100%;
+    width: 0%;
+  }
+
+  .percentage{
+    font-family: 'Roboto Mono';
+    font-size: 20px;
+    text-align: center; /* Center the text */
+    margin-top: 10px; /* Add margin for spacing */
+  }
+
+  .img{
+    height: 200px;
+    width: auto;
+    object-fit: contain;
+    display: none;
+    border: 5px solid black;
+  }
+/*analayze button*/
+  #analyze{
+    background: #BDD9BF;
+    height: 60px;
+    width: 100px;
+    position: fixed;
+    bottom: 50px;
+    right: 90px;
+    padding: 10px 100px;
+  }

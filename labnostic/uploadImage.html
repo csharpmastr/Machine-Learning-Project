@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LabNostic</title>
+    <link rel="stylesheet" href="uploadImage.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik+One&display=swap"> <!--rubik one-->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:wght@400;700&display=swap"> <!--roboto mono-->
+</head>
+<body>
+    <!--logo and name-->
+    <header class="header">
+        <div class="logo">
+            <img src="logo.png">
+        </div>
+        <div class = "name">
+            <h1>LabNostic</h1>
+        </div>
+    </header>
+    <main>
+        <input
+            type="file"
+            class="inputFile"
+            id="fileInp"
+            onchange="getFile(event)"
+            accept="image/png, image/jpeg"
+        />
+        <label for="fileInp">+</label>
+        <span class="chosenImage">No image chosen, yet</span>
+        <div class="uploadButton">
+        <button id="upload" onclick="uploadImage()">
+            <img src = "upload.png" style="filter: invert(100%) sepia(6%) saturate(0%) hue-rotate(319deg) brightness(111%) contrast(101%);"> <!--change color of the icon-->
+                Upload
+        </button>
+        <div class="bar">
+            <div class="progress"></div>
+        </div>
+        <div class="percentage">0%</div>
+        <a href="image.html">
+            <button id = "analyze" disabled>Analyze</button>
+        </a>
+    </main>
+    <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-database.js"></script> 
+    <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-storage.js"></script> 
+    <script src = "uploadImage.js"></script>
+</body>
+</html>
