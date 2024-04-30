@@ -1,6 +1,5 @@
 import sys
-import logging
-import logger
+from src.logger import logging
 
 # create function for custom exception message
 def error_msg_detail(error, error_detail:sys):

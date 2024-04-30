@@ -38,3 +38,26 @@ def vizSampling(sampled_data, pre_sampled_data, sampling_method=''):
     
     plt.tight_layout()
     plt.show()
+
+
+# function to visualize scaled and sampled data
+def vizScaling(scaled_data, pre_scaled_data, scaling_method='', sample_method=''):
+    fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, figsize=(15, 10))
+
+    ax1.set_title('Before Scaling')
+    ax1.set_xlabel('Values')
+    ax1.set_ylabel('Count')
+    for col in pre_scaled_data.columns:
+        sns.kdeplot(pre_scaled_data[col], ax=ax1)
+    
+    ax2.set_title(f'After {scaling_method} and {sample_method}')
+    ax2.set_xlabel('Values')
+    ax2.set_ylabel('Count')
+    for col in scaled_data.columns:
+        sns.kdeplot(scaled_data[col], ax=ax2)
+        
+    ax1.legend(pre_scaled_data.columns)
+    ax2.legend(scaled_data.columns)
+    ax1.grid(True)
+    ax2.grid(True)
+    plt.tight_layout()
