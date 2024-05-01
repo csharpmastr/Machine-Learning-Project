@@ -1,0 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap');
+
+/* Apply Roboto Mono to specific form elements */
+#pregnancies, #bmi, #bloodPressure, #pedigreeFunction, #skinThickness, #age, #glucose, #insulin {
+    font-family: 'Roboto Mono', monospace;
+    width: 300px;
+}
+
+.container {
+    display: flex; /* Make the container a flex container */
+    flex-direction: column; /* Stack elements vertically */
+    justify-content: center;
+}
+body {
+    margin: 0;
+    padding: 0;
+    background: #FFC857;
+    font-family: 'Roboto Mono';
+   
+}
+header{
+    height: 40px;
+    display: flex;
+    align-items: center;
+    padding: 1em;
+  }
+/*logo*/
+  .logo img{
+    height: 60px;
+    width: 60px;
+  }
+/*logo name*/
+  .name{
+    margin-left: 1em;
+    font-family: 'Rubik One';
+    color: #2E4052;
+  }
+.labnostic-title {
+    width: 200px; /* Set width for the title */
+    margin: 10px 0 0 20px; /* Adjust margins for top and left positioning */
+}
+
+
+h1, h2 {
+    font-family: 'Rubik One', sans-serif;
+}
+h2 {
+    text-align: center;
+    font-size: 30px;
+    color: #2E4052;
+}
+
+
+#diabetes-form {
+    display: flex; /* Use flexbox to arrange columns */
+    justify-content: space-between; /* Space columns evenly */
+    margin-top: 10px; /* Add margin for spacing */
+}
+
+.left-column,
+.right-column {
+    flex: 1; /* Allow columns to expand and fill remaining space */
+    padding: 0 170px; /* Add padding for spacing */
+}
+
+.left-column {
+    border-right: 1px /* Add border between columns */
+}
+
+.form-group {
+    margin-bottom: 10px; /* Add margin between form groups */
+}
+
+label {
+    display: block; /* Display labels as block elements */
+}
+
+/* Adjust the style of the custom number input */
+.number-input {
+    position: relative;
+    display: inline-block;
+}
+
+.number-input input[type="number"] {
+    width: 100px;
+    padding: 5px 30px 5px 10px; /* Adjust padding for input */
+    text-align: left;
+    color: #fff;
+    border: 1px solid #2E4052; /* Add border */
+    border-radius: 5px; /* Add border-radius */
+    background-color: #2E4052;
+}
+
+.number-input button {
+    position: absolute;
+    top: 0;
+    width: 0px;
+    height: 0%;
+    padding: 15px;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    background-color:#2E4052;
+    font-size: 16px;
+    display: flex; /* Use flexbox */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+}
+
+.number-input .plus-btn {
+    right: 0; 
+    color: #fff; /* Change text color for the plus button */
+}
+
+.number-input .minus-btn {
+    left: 290px;
+    color: #fff; /* Change text color for the minus button */
+}
+
+.number-input button:hover {
+    background-color: #ccc;
+}
+
+
+
+.button-container {
+    position: absolute;
+    bottom: 20px;
+    left: 53%;
+    transform: translateX(-50%);
+    width: 300px; /* Button width */
+    height: 80px; /* Button height */
+  }
+  
+  button {
+      background-color: #bdd9bf;
+      color: #2e4052;
+      padding: 15px 60px;
+      cursor: pointer;
+      border-radius: 15px; 
+      font-size: 13px; /* Change font size */
+      font-weight: bold;
+  }
+  
+  button:hover {
+      background-color: #0056b3;
+  }
+
+
+
+

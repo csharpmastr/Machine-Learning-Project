@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LabNostic - Diabetes Prediction Test</title>
+    <link rel="stylesheet" href="website.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik+One&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <img src="Lablogo.png" alt="LabNostic Logo">
+            </div>
+            <div class="name">
+                <h1>LabNostic</h1>
+            </div>
+        </header>
+        <h2>Diabetes Prediction Test</h2>
+        <form id="diabetes-form">
+            <div class="left-column">
+                <div class="form-group">
+                    <label for="pregnancies">Gender:</label>
+                    <div class="number-input">
+                        <input type="number" id="pregnancies" name="pregnancies" required>
+                        <button class="minus-btn" type="button">-</button>
+                        <button class="plus-btn" type="button">+</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="bmi">Age:</label>
+                    <div class="number-input">
+                        <input type="number" id="bmi" name="bmi" required>
+                        <button class="minus-btn" type="button">-</button>
+                        <button class="plus-btn" type="button">+</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="bloodPressure">BMI:</label>
+                    <div class="number-input">
+                        <input type="number" id="bloodPressure" name="bloodPressure" required>
+                        <button class="minus-btn" type="button">-</button>
+                        <button class="plus-btn" type="button">+</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="pedigreeFunction">HbA1c:</label>
+                    <div class="number-input">
+                        <input type="number" id="pedigreeFunction" name="pedigreeFunction" required>
+                        <button class="minus-btn" type="button">-</button>
+                        <button class="plus-btn" type="button">+</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="pedigreeFunction">Cholesterol:</label>
+                    <div class="number-input">
+                        <input type="number" id="pedigreeFunction" name="pedigreeFunction" required>
+                        <button class="minus-btn" type="button">-</button>
+                        <button class="plus-btn" type="button">+</button>
+                    </div>
+                </div>  
+            </div>
+            <div class="right-column">
+                <div class="form-group">
+                    <label for="skinThickness">Triglyceride:</label>
+                    <div class="number-input">
+                        <input type="number" id="skinThickness" name="skinThickness" required>
+                        <button class="minus-btn" type="button">-</button>
+                        <button class="plus-btn" type="button">+</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="age">High-Density Lipoprotein:</label>
+                    <div class="number-input">
+                        <input type="number" id="age" name="age" required>
+                        <button class="minus-btn" type="button">-</button>
+                        <button class="plus-btn" type="button">+</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="glucose">Low-Density Lipoprotein:</label>
+                    <div class="number-input">
+                        <input type="number" id="glucose" name="glucose" required>
+                        <button class="minus-btn" type="button">-</button>
+                        <button class="plus-btn" type="button">+</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="glucose">Creatinine:</label>
+                    <div class="number-input">
+                        <input type="number" id="glucose" name="glucose" required>
+                        <button class="minus-btn" type="button">-</button>
+                        <button class="plus-btn" type="button">+</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="insulin">Urea:</label>
+                    <div class="number-input">
+                        <input type="number" id="insulin" name="insulin" required>
+                        <button class="minus-btn" type="button">-</button>
+                        <button class="plus-btn" type="button">+</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div class="button-container">
+            <a href="Analysis.html">
+            <button type="submit">Predict and analyze</button>
+        </div>
+        <div id="prediction"></div>
+    </div>
+    <script src="website.js"></script>
+</body>
+</html>
