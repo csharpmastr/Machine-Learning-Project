@@ -1,7 +1,6 @@
 import os
 import sys
 
-from optree import CustomTreeNode
 from src.exception import CustomException
 from src.logger import logging
 
@@ -28,7 +27,7 @@ class DataIngestion:
         logging.info('Started Data Ingestion Method')
         
         try:
-            data = pd.read_csv('notebook\data\diabetes1.csv')
+            data = pd.read_csv('notebook\data\cleaned_data.csv')
             logging.info('Imported .csv Data as a Pandas DataFrame')
             
             # create artifacts directory (if existing, just replace the folder)
