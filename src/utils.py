@@ -77,7 +77,7 @@ def save_object(file_path, obj):
         
         print("Directory Path:", dir_path)
         print("File Path:", file_path)
-        
+
         # create directory
         os.makedirs(dir_path, exist_ok=True)
         
