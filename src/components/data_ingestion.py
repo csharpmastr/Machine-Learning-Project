@@ -2,11 +2,15 @@ import os
 import sys
 
 from src.exception import CustomException
+from src.components.data_transformation import DataTransformation
+from src.components.data_transformation import DataTransformationConfig
 from src.logger import logging
 
 import pandas as pd
 from dataclasses import dataclass
 from sklearn.model_selection import train_test_split
+
+
 
 # direct exported data to a specific file path
 
@@ -36,14 +40,14 @@ class DataIngestion:
             # save raw pandas data to csv
             data.to_csv(self.ingestion_config.raw_data_path, index=False, header=True)
             
-            logging.info('Train test split Initiated')
             train_data, test_data = train_test_split(data, test_size=0.2, random_state=62)
+            logging.info('Train and Test data created')
             
             # save train and test data to csv
             train_data.to_csv(self.ingestion_config.train_data_path, index=False, header=True)
             test_data.to_csv(self.ingestion_config.test_data_path, index=False, header=True)
             
-            logging.info('Data Ingestion Completed')
+            logging.info('Data Ingestion completed')
             
             # return train and test data path for data transformation purposes
             return (
@@ -55,4 +59,10 @@ class DataIngestion:
 
 if __name__=='__main__':
     obj=DataIngestion()
-    obj.initiate_data_ingestion()
+    
+    # obtain train and test data path
+    train_data_path, test_data_path = obj.initiate_data_ingestion()
+    
+    # initialize DataTransformation
+    data_transformation = DataTransformation()
+    data_transformation.initiate_data_transformation(train_data_path, test_data_path)

@@ -6,4 +6,5 @@ scikit-learn
 imblearn
 keras
 mlens
+dill
 -e .

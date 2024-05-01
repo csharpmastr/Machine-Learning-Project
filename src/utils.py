@@ -1,5 +1,12 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
+import os
+import sys
+import pandas as pd
+import numpy as np
+import dill
+
+from src.exception import CustomException
 
 # function to visualize distribution before and after sampling
 def vizSampling(sampled_data, pre_sampled_data, sampling_method=''):
@@ -61,3 +68,21 @@ def vizScaling(scaled_data, pre_scaled_data, scaling_method='', sample_method=''
     ax1.grid(True)
     ax2.grid(True)
     plt.tight_layout()
+
+
+# function to save object to folder
+def save_object(file_path, obj):
+    try:
+        dir_path = os.path.dirname(file_path)
+        
+        print("Directory Path:", dir_path)
+        print("File Path:", file_path)
+        
+        # create directory
+        os.makedirs(dir_path, exist_ok=True)
+        
+        with open(file_path, "wb") as file_obj:
+            dill.dump(obj, file_obj)
+        
+    except Exception as e:
+        raise CustomException(e, sys)
