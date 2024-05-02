@@ -4,6 +4,8 @@ import sys
 from src.exception import CustomException
 from src.components.data_transformation import DataTransformation
 from src.components.data_transformation import DataTransformationConfig
+from src.components.model_trainer import ModelTrainerConfig
+from src.components.model_trainer import ModelTrainer
 from src.logger import logging
 
 import pandas as pd
@@ -65,4 +67,8 @@ if __name__=='__main__':
     
     # initialize DataTransformation
     data_transformation = DataTransformation()
-    data_transformation.initiate_data_transformation(train_data_path, test_data_path)
+    train_data, test_data, _ = data_transformation.initiate_data_transformation(train_data_path, test_data_path)
+
+    # initialize ModelTrainer
+    model_trainer = ModelTrainer()
+    print(model_trainer.initiate_model_trainer(train_data, test_data))

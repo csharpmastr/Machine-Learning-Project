@@ -6,6 +6,8 @@ import pandas as pd
 import numpy as np
 import dill
 
+from sklearn.model_selection import RepeatedStratifiedKFold, cross_val_score
+
 from src.exception import CustomException
 
 # function to visualize distribution before and after sampling
@@ -86,3 +88,16 @@ def save_object(file_path, obj):
         
     except Exception as e:
         raise CustomException(e, sys)
+
+
+# function to evaluate the model
+def evaluate_base_model(models, x_train, y_train):
+    rskf =  RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=42)
+    
+    cv_scores = {}
+    
+    for model in models:
+        scores = cross_val_score(model, x_train, y_train.ravel(), cv=rskf, scoring='accuracy')
+        cv_scores[model.__class__.__name__] = scores
+    
+    return cv_scores
