@@ -3,7 +3,6 @@ import os
 from dataclasses import dataclass
 
 # libraries for data cleaning and transformation
-import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
