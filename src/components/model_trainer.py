@@ -75,7 +75,7 @@ class ModelTrainer:
             logging.info('Meta learner fitted')
             
             # evaluate base models alone
-            evaluate_models(x_test, y_test)
+            evaluate_models(x_test, y_test, base_model)
             logging.info('Base models evaluated')
             # cv_score = evaluate_base_model(base_model, x_train, y_train)
             
@@ -87,8 +87,8 @@ class ModelTrainer:
             # fit and evaluate base-model and meta-model
             # ensemble = get_meta_learner(x_train)
             
-            print(x_train.shape)
-            print(y_train.shape)
+            # print(x_train.shape)
+            # print(y_train.shape)
             
             # ensemble.fit(x_train, y_train.ravel())
             
@@ -125,7 +125,7 @@ class ModelTrainer:
 def get_base_models():
     try:
         models = list()
-        models.append(LogisticRegression(random_state=52, solver='lbfgs', multi_class='multinomial', max_iter=150))
+        models.append(LogisticRegression(random_state=52, solver='lbfgs', multi_class='multinomial', max_iter=200))
         models.append(KNeighborsClassifier(n_neighbors=5, metric='euclidean'))
         models.append(SVC(gamma='scale', decision_function_shape='ovr', probability=True))
         models.append(RandomForestClassifier(max_depth=5))
@@ -150,7 +150,7 @@ def get_base_models():
 #         logging.info('Base models added to ensemble')
         
 #         # add the meta model
-#         ensemble.add_meta(LogisticRegression(solver='lbfgs'))
+#         ensemble.add_meta(LogisticRegression(solver='lbfgs', multi_class='multinomial'))
 #         logging.info('Used Logistic Regression as an experiment for the meta learner')
         
 #         return ensemble
@@ -165,42 +165,96 @@ def get_out_of_fold(x, y, models):
         meta_x, meta_y = list(), list()
     
         # define split of data
-        kfold = KFold(n_splits=10, shuffle=True)
+        kfold = KFold(n_splits=7, shuffle=True)
         
         # for logging purposes
         logged = False
         
+        split_sizes = [len(test_ix) for _, test_ix in kfold.split(x)]
+        print("K-Fold split sizes:", split_sizes)
+        
         # enumerate splits
         for train_ix, test_ix in kfold.split(x):
-            fold_yhats = list()
+            fold_yhats = []
             
             #get the data
             train_X, test_X = x[train_ix], x[test_ix]
             train_Y, test_Y = y[train_ix], y[test_ix]
-            meta_y.extend(test_Y)
-            meta_y = encoder.fit_transform(np.array(meta_y).reshape(-1, 1)) 
+            # meta_y.extend(test_Y)
+            
+            # Check if `test_Y` is one-hot encoded
+            is_one_hot_encoded = test_Y.ndim > 1 and test_Y.shape[1] > 1
+
+            if is_one_hot_encoded:
+                # If already one-hot encoded, no need to re-encode
+                meta_y.extend(test_Y)
+                if not logged:                    
+                    logging.info('Test_Y already one-hot encoded')
+            else:
+                # If not, apply one-hot encoding
+                encoder = OneHotEncoder(categories='auto', sparse_output=False)
+                encoded_test_Y = encoder.fit_transform(np.argmax(test_Y, axis=1))
+                meta_y.extend(encoded_test_Y)
+                if not logged:                    
+                    logging.info('Test_Y not one-hot encoded')
+            
+            if not logged:
+                    logging.info('Data has been splitted')
+                    print("train_X shape:", train_X.shape)
+                    print("test_X shape:", test_X.shape)
+                    print("train_Y shape:", train_Y.shape)
+                    print("test_Y shape:", test_Y.shape)
+                    
             
             # fit and make predictions on each base-model
-            # flatten_train_y = np.argmax(train_Y, axis=1)
+            flatten_train_y = np.argmax(train_Y, axis=1)
             for model in models:
-                model.fit(train_X, train_Y.argmax(axis=1))
-                yhat = model.predict_proba(test_X)
+                # Check if model is a Neural Network
+                if isinstance(model, KerasClassifier):
+                    # Use a a one-hot encoded Target feature for fitting
+                    model.fit(train_X, train_Y)
+                    logging.info("Neural Network has been fitted")
+                else:
+                    # Use a flatten target for other models
+                    model.fit(train_X, flatten_train_y)
+                    logging.info("Other base models have been fitted")
+                
+                if hasattr(model, 'predict_proba'):
+                    yhat = model.predict_proba(test_X)
+                    if not logged:
+                        logging.info("Models has been used for prediction")
+                        
+                else:
+                    yhat = model.predict(test_X)
+                    if not logged:
+                        logging.info("Models has been used for prediction")
                 
                 if not logged:
                     logging.info('Models have been fitted')
-                    print("train_Y shape:", train_Y.shape)
-                    print("meta_y shape:", meta_y.shape)
-                    print("yhat shape:", yhat.shape)
                     logged = True
                 
-                # store columns
-                if yhat.ndim == 1:  # If `yhat` is already 1D, append directly
-                    yhat_onehot = encoder.fit_transform(yhat.reshape(-1, 1))
-                    fold_yhats.append(yhat_onehot)
+                # Convert `yhat` to labels and add to `fold_yhats`
+                yhat_labels = np.argmax(yhat, axis=1)  # Get the predicted class labels
+                fold_yhats.append(vstack(yhat_labels))  # Append to `fold_yhats`
+                
             # store fold_yhats as columns
-            print(fold_yhats)
-            meta_x.append(hstack(fold_yhats))
-            print(meta_x)
+            # Concatenate if not empty
+            if fold_yhats:
+                meta_x.append(hstack(fold_yhats))
+            else:
+                print("Error: `fold_yhats` is empty. Cannot concatenate.")
+        
+        meta_x_lengths = [len(item) for item in meta_x]
+        meta_y_lengths = [len(item) for item in meta_y]
+        print("x shape:", x.shape)
+        print("y shape:", y.shape)
+        print("train_X shape:", train_X.shape)
+        print("test_X shape:", test_X.shape)
+        print("train_Y shape:", train_Y.shape)
+        print("test_Y shape:", test_Y.shape)
+        print("Size of `test_Y`:", len(test_Y)) 
+        print("length of meta_x:", len(meta_x_lengths))
+        print("length of meta_y:", len(meta_y_lengths))
         return vstack(meta_x), asarray(meta_y)
     except Exception as e:
         raise CustomException(e, sys)
@@ -208,16 +262,22 @@ def get_out_of_fold(x, y, models):
 # fit all base-models
 def fit_base_models(x, y, models):
     try:
+        y_flatten = np.argmax(y, axis=1)
         for model in models:
-            model.fit(x, y)
+            if isinstance(model, KerasClassifier):
+                model.fit(x, y)
+            else:
+                model.fit(x, y_flatten)
+            
     except Exception as e:
         raise CustomException(e, sys)
 
 # fit meta-learner
 def fit_meta_learner(x, y):
     try:
-        model = LogisticRegression(solver='liblinear')
-        model.fit(x, y)
+        y_flatten = np.argmax(y, axis=1)
+        model = LogisticRegression(solver='liblinear', max_iter=200, multi_class='auto')
+        model.fit(x, y_flatten)
         return model
     except Exception as e:
         raise CustomException(e, sys)
@@ -225,10 +285,20 @@ def fit_meta_learner(x, y):
 # evaluate list of models
 def evaluate_models(x, y, models):
     try:
+        # Convert one-hot encoded `y` to labels
+        y_labels = np.argmax(y, axis=1)
+        
         for model in models:
             yhat = model.predict(x)
-            acc = accuracy_score(y, yhat)
+            
+            # Convert predictions to labels if needed
+            if yhat.ndim > 1 and yhat.shape[1] > 1:
+                yhat = np.argmax(yhat, axis=1)
+            
+            acc = accuracy_score(y_labels, yhat)
             print('%s: %.3f' % (model.__class__.__name__, acc*100))
+        
+        logging.info('Base models evaluated')
     except Exception as e:
         raise CustomException(e, sys)
     
@@ -236,11 +306,22 @@ def evaluate_models(x, y, models):
 def meta_learner_predictions(x, models, meta_learner):
     try:
         meta_x = list()
+        printed = False
         for model in models:
-            yhat = model.predict(x)
+            yhat = model.predict_proba(x)
+            
+            if not printed:
+                print(yhat)
             meta_x.append(yhat)
-        meta_x = hstack(meta_x)
+            
+            if not printed:
+                print(meta_x)
+                printed = True
         
+        meta_x = np.hstack(meta_x)
+        print('meta x:', meta_x[0])
+        print('yhat shape', yhat.shape)
+        print('meta_x shape', meta_x.shape)
         # predict
         return meta_learner.predict(meta_x)
 

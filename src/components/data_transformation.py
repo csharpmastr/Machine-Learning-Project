@@ -113,6 +113,12 @@ class DataTransformation:
             input_feature_train_arr = preprocessor_obj.fit_transform(train_df)
             input_feature_test_arr = preprocessor_obj.transform(test_df) 
             
+            print("index 1 of train data: ", input_feature_train_arr[1])
+            print("Shape of the train data: ", input_feature_train_arr.shape)
+            print("index 1 of test data: ", input_feature_test_arr[1])
+            print("Shape of the test data: ", input_feature_test_arr.shape)
+            
+            
             logging.info(
                 f"Preprocessor object has been applied on train and test data"
                 )        
