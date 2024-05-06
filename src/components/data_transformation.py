@@ -33,7 +33,7 @@ class DataTransformation:
             CustomException: Exception handling method to debug code easily
 
         Returns:
-            preprocessor: The custom data precessor that will clean and transform
+            preprocessor: The custom data preprocessor that will clean and transform
             the training data
         """
         try:
@@ -51,19 +51,22 @@ class DataTransformation:
                 'AGE'
                 ]
             # select all categorical / discrete columns
-            cat_cols = ['Gender', 'CLASS']
+            cat_cols = ['Gender_F','Gender_M','CLASS_N','CLASS_P','CLASS_Y']
             
             # prepare pipeline for numerical columns
             num_pipeline = Pipeline(
                 steps=[('scaler', StandardScaler(with_mean=False))]
             )
             
+            # Pass-through transformer for categorical columns (no processing)
+            pass_through = lambda x: x
+            
             # prepare pipeline for categorical columns
-            cat_pipeline = Pipeline(
-                steps=[
-                    ('one_hot_encoder', OneHotEncoder(handle_unknown='ignore'))
-                ]
-            )
+            # cat_pipeline = Pipeline(
+            #     steps=[
+            #         ('one_hot_encoder', OneHotEncoder(handle_unknown='ignore'))
+            #     ]
+            # )
             
             # pass logging info
             logging.info("Scaling of Numerical Columns is completed")
@@ -73,7 +76,7 @@ class DataTransformation:
             preprocessor = ColumnTransformer(
                 transformers=[
                     ('numerical_pipeline', num_pipeline, num_cols),
-                    ('categorical_pipeline', cat_pipeline, cat_cols)
+                    ('pass_through', 'passthrough', cat_cols)
                 ]
             )
             
@@ -113,10 +116,10 @@ class DataTransformation:
             input_feature_train_arr = preprocessor_obj.fit_transform(train_df)
             input_feature_test_arr = preprocessor_obj.transform(test_df) 
             
-            print("index 1 of train data: ", input_feature_train_arr[1])
-            print("Shape of the train data: ", input_feature_train_arr.shape)
-            print("index 1 of test data: ", input_feature_test_arr[1])
-            print("Shape of the test data: ", input_feature_test_arr.shape)
+            # print("index 1 of train data: ", input_feature_train_arr[1])
+            # print("Shape of the train data: ", input_feature_train_arr.shape)
+            # print("index 1 of test data: ", input_feature_test_arr[1])
+            # print("Shape of the test data: ", input_feature_test_arr.shape)
             
             
             logging.info(

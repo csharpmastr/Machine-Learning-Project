@@ -1,6 +1,8 @@
 import os
 import sys
 
+from sklearn.preprocessing import OneHotEncoder
+
 from src.exception import CustomException
 from src.components.data_transformation import DataTransformation
 from src.components.data_transformation import DataTransformationConfig
@@ -11,6 +13,7 @@ from src.logger import logging
 import pandas as pd
 from dataclasses import dataclass
 from sklearn.model_selection import train_test_split
+from imblearn.over_sampling import SMOTE
 
 
 
@@ -39,10 +42,33 @@ class DataIngestion:
             # create artifacts directory (if existing, just replace the folder)
             os.makedirs(os.path.dirname(self.ingestion_config.train_data_path), exist_ok=True)
             
-            # save raw pandas data to csv
-            data.to_csv(self.ingestion_config.raw_data_path, index=False, header=True)
+            # apply one-hot encoding first to the data
+            encoder = OneHotEncoder(categories='auto', handle_unknown='ignore', sparse_output=False)
             
-            train_data, test_data = train_test_split(data, test_size=0.2, random_state=62)
+            data_to_encode = data[['Gender', 'CLASS']]
+            encoded_data = encoder.fit_transform(data_to_encode)
+            
+            encoded_df = pd.DataFrame(encoded_data, columns=encoder.get_feature_names_out(['Gender', 'CLASS']))
+            
+            data = data.drop(['Gender', 'CLASS'], axis=1)
+            encoded_data = pd.concat([data, encoded_df], axis=1)
+            encoded_data
+            
+            # apply oversampling to data before splitting into train and test
+            x_features = encoded_data.iloc[:, 0:12]
+            y_target = encoded_data.iloc[:, 12:]
+            
+            smote = SMOTE(random_state=42)
+            x_resampled, y_resampled = smote.fit_resample(x_features.to_numpy(), y_target.to_numpy())
+            
+            x_data = pd.DataFrame(x_resampled, columns=x_features.columns)
+            y_data = pd.DataFrame(y_resampled, columns=y_target.columns)
+            resampled_data = pd.concat([x_data, y_data], axis=1)
+            
+            # save raw pandas data to csv
+            resampled_data.to_csv(self.ingestion_config.raw_data_path, index=False, header=True)
+            
+            train_data, test_data = train_test_split(resampled_data, test_size=0.2, random_state=62)
             logging.info('Train and Test data created')
             
             # save train and test data to csv

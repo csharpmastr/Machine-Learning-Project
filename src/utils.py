@@ -6,6 +6,8 @@ import pandas as pd
 import numpy as np
 import dill
 
+from scikeras.wrappers import KerasClassifier
+
 from sklearn.model_selection import RepeatedStratifiedKFold, cross_val_score
 
 from src.exception import CustomException
@@ -94,10 +96,13 @@ def save_object(file_path, obj):
 def evaluate_base_model(models, x_train, y_train):
     rskf =  RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=42)
     
-    cv_scores = {}
-    
     for model in models:
-        scores = cross_val_score(model, x_train, y_train.ravel(), cv=rskf, scoring='accuracy')
-        cv_scores[model.__class__.__name__] = scores
+        if isinstance(model, KerasClassifier) or hasattr(model, 'predict_proba'):
+        # One-hot encode for models expecting probabilities
+            y_train_encoded = y_train.reshape(1, -1)
+            scores = cross_val_score(model, x_train, y_train_encoded, cv=rskf, scoring='accuracy')
+        else:
+            # Use raw labels for other models
+            scores = cross_val_score(model, x_train, y_train.ravel(), cv=rskf, scoring='accuracy')
     
-    return cv_scores
+    return scores
