@@ -106,3 +106,32 @@ def evaluate_base_model(models, x_train, y_train):
             scores = cross_val_score(model, x_train, y_train.ravel(), cv=rskf, scoring='accuracy')
     
     return scores
+
+# function to plot the learning curve of the meta learner
+def plot_learning_curve(history):
+    try:
+        # creating new figure
+        plt.figure(figsize=(12, 6))
+        
+        # plot loss
+        plt.subplot(1, 2, 1)  # Subplot for loss
+        plt.plot(history.history['loss'], label='Training Loss')
+        plt.plot(history.history['val_loss'], label='Validation Loss')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.title('Training and Validation Loss')
+        plt.legend()
+        
+        # Plot accuracy
+        plt.subplot(1, 2, 2)  # Subplot for accuracy
+        plt.plot(history.history['accuracy'], label='Training Accuracy')
+        plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+        plt.xlabel('Epochs')
+        plt.ylabel('Accuracy')
+        plt.title('Training and Validation Accuracy')
+        plt.legend()
+        
+        plt.tight_layout()
+        plt.show()
+    except Exception as e:
+        raise CustomException(e, sys)

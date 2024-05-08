@@ -11,16 +11,19 @@ from numpy import asarray
 
 from sklearn import metrics
 from sklearn.decomposition import PCA
-from sklearn.model_selection import KFold, cross_val_score
+from sklearn.discriminant_analysis import StandardScaler
+from sklearn.model_selection import KFold, cross_val_score, train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix, hamming_loss, f1_score
 
 from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import BaggingClassifier
 from sklearn.ensemble import AdaBoostClassifier
+# from mlxtend.classifier import MultiOutputClassifier
 
 import tensorflow as tf
 from tensorflow import keras
@@ -31,6 +34,7 @@ from src.exception import CustomException
 from src.logger import logging
 from src.utils import save_object
 from src.utils import evaluate_base_model
+from src.utils import plot_learning_curve
 
 @dataclass
 class ModelTrainerConfig:
@@ -65,20 +69,25 @@ class ModelTrainer:
             meta_x, meta_y = get_out_of_fold(x_train, y_train, base_model)
             logging.info('Out of folds obtained')
             
-            print('Meta X:', meta_x.shape)
-            print('Meta Y:', meta_y.shape)
+            print('Meta X shape:', meta_x.shape)
+            print('Meta Y shape:', meta_y.shape)
+            print('Meta X data_type after folds:', meta_x.dtype)
+            print('Meta Y data_type after folds:', meta_y.dtype)
             
             # fit base models
             fit_base_models(x_train, y_train, base_model)
             logging.info('Base models fitted')
             
             # fit meta-learner
-            meta_learner = fit_meta_learner(meta_x, meta_y)
-            logging.info('Meta learner fitted')
+            # meta_learner = fit_meta_learner(meta_x, meta_y)
+            # logging.info('Meta learner fitted')
             
             # evaluate base models alone
             evaluate_models(x_test, y_test, base_model)
             logging.info('Base models evaluated')
+            
+            meta_learner, history = fit_meta_learner_NN(meta_x, meta_y)
+            logging.info('Meta learner fitted')
             
             yhat = meta_learner_predictions(x_test, base_model, meta_learner)
             yhat_df = pd.DataFrame(yhat)
@@ -86,23 +95,30 @@ class ModelTrainer:
             y_test_reshape = np.argmax(y_test, axis=1)
             
             print('yhat values at index 1:3', yhat_df)
+            # print('VCF prediction shape', vcf_prediction.shape)
             
             print('yhat shape:', yhat.shape)
             print('ytest shape:', y_test.shape)
             print('y_test_reshape shape:', y_test_reshape.shape)
             print('yhat unique values', np.unique(yhat))
+            # print('VCF prediction unique values', np.unique(vcf_prediction))
             print('ytest unique values', np.unique(y_test))
             print('y_test_reshape unique values', np.unique(y_test_reshape))
             
             h_loss = hamming_loss(y_test_reshape, yhat)
             f1 = f1_score(y_test_reshape, yhat, average='micro')
-            print('Meta Learner: %.3f' % (accuracy_score(y_test_reshape, yhat) * 100))
+            # h_loss_vcf = hamming_loss(y_test_reshape, vcf_prediction)
+            # f1_vcf = f1_score(y_test_reshape, vcf_prediction, average='micro')
+            # print('Meta Learner VCF: %.3f' % (accuracy_score(y_test_reshape, vcf_prediction) * 100))
+            print('Meta Learner Neural Network: %.3f' % (accuracy_score(y_test_reshape, yhat) * 100))
             print('Hamming Loss:', h_loss)
             print('F1 Score:', f1)
             logging.info('Meta Learner evaluated')
             
             # calculate confusion matrix
             confusion = confusion_matrix(y_test_reshape, yhat)
+            
+            plot_learning_curve(history)
             
             # evaluate models
             # score = evaluate_base_model(base_model, x_train, y_train)
@@ -134,7 +150,7 @@ def get_base_models():
         models.append(RandomForestClassifier(max_depth=5))
         models.append(AdaBoostClassifier(random_state=12))
         models.append(BaggingClassifier(n_estimators=10))
-        models.append(get_neural_network_model())
+        models.append(GaussianNB())
         return models
     
     except Exception as e:
@@ -228,10 +244,16 @@ def get_out_of_fold(x, y, models):
         # print("train_X shape:", train_X.shape)
         # print("test_X shape:", test_X.shape)
         # print("train_Y shape:", train_Y.shape)
-        # print("test_Y shape:", test_Y.shape)
-        # print("Size of `test_Y`:", len(test_Y)) 
+        print("meta_x dtype from folds:", test_Y.dtype)
+        print("meta_y dtype from folds:", test_Y.dtype)
+        
+        meta_x = vstack(meta_x)
+        meta_y = asarray(meta_y)
+        
+        print("meta_x value at index 0:", meta_x[:, 0:1])
+        print("meta_y value at index 0:", meta_y[:, :])
 
-        return vstack(meta_x), asarray(meta_y)
+        return meta_x, meta_y
     except Exception as e:
         raise CustomException(e, sys)
 
@@ -249,12 +271,35 @@ def fit_base_models(x, y, models):
         raise CustomException(e, sys)
 
 # fit meta-learner
-def fit_meta_learner(x, y):
+# def fit_meta_learner(x, y):
+#     try:
+#         y_flatten = np.argmax(y, axis=1)
+#         model = LogisticRegression(solver='liblinear', max_iter=200, multi_class='ovr', penalty='l1')
+#         model.fit(x, y_flatten)
+#         return model
+#     except Exception as e:
+#         raise CustomException(e, sys)
+
+
+        
+        # x_train = x_train.astype(np.float32)
+        # x_val = x_val.astype(np.float32)
+        # y_train = y_train.astype(np.float32)
+        # y_val = y_val.astype(np.float32)
+
+# trying to use neural network as my meta learner
+def fit_meta_learner_NN(x, y):
     try:
-        y_flatten = np.argmax(y, axis=1)
-        model = LogisticRegression(solver='liblinear', max_iter=200, multi_class='auto')
-        model.fit(x, y_flatten)
-        return model
+        model = get_neural_network_model()
+        
+        x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.2, random_state=65)
+        
+        history = model.fit(
+            X=x_train,
+            y=y_train,
+            validation_data=(x_val, y_val)
+        )
+        return model, history
     except Exception as e:
         raise CustomException(e, sys)
 
@@ -296,7 +341,16 @@ def meta_learner_predictions(x, models, meta_learner):
         print('meta_x_pca shape', meta_x.shape)
         meta_x = meta_x.reshape(x.shape[0], -1)
         print('yhat shape', yhat.shape)
-        print('meta_x shape', meta_x.shape)
+        print('meta_x shape after predict', meta_x.shape)
+        print('meta_x dtype after predict', meta_x.dtype)
+        
+        # scaler = StandardScaler(with_mean=False)
+        # meta_x = scaler.fit_transform(meta_x)
+        
+        print('meta_x sample', meta_x[0])
+        print('meta_x unique', np.unique(meta_x))
+        
+        meta_x = meta_x.astype(np.int64)
         
         # predict
         prediction = meta_learner.predict(meta_x)
@@ -316,18 +370,21 @@ def build_neural_network_model():
     try:
         # Define your neural network
         nn_model = tf.keras.Sequential([
-            keras.layers.Input(shape=(12,)),  # Explicit input layer with 12 features
-            keras.layers.Dense(24, activation='relu'),  # First hidden layer
+            keras.layers.Input(shape=(7,)), # Explicit input layer with 7 features from base models predictions
+            keras.layers.Dense(64, activation='relu'),  # First hidden layer
             keras.layers.Dense(32, activation='relu'),  # Second hidden layer
             keras.layers.Dropout(0.4),  # Regularization
             keras.layers.Dense(3, activation='softmax')  # Output layer (multi-class classification)
         ])
         
+        opt = tf.keras.optimizers.Adam(learning_rate=0.001)
+        
         # Compile the model
         nn_model.compile(
-            optimizer='adam',
+            optimizer=opt,
             loss='categorical_crossentropy',
-            metrics=['accuracy', 'Recall']
+            metrics=['accuracy', 'Recall'],
+            auto_scale_loss=True
         )
         
         return nn_model  # Returns the model itself
@@ -338,9 +395,14 @@ def build_neural_network_model():
 def get_neural_network_model():
     try:
         # Wrap the Keras model with KerasClassifier
-        keras_clf = KerasClassifier(model=build_neural_network_model, epochs=10, batch_size=32, verbose=0)
+        keras_clf = KerasClassifier(model=build_neural_network_model,
+                                    epochs=10,
+                                    batch_size=32,
+                                    verbose=1)
         
-        logging.info('Neural Network base model created')
+        keras_clf._estimator_type = "classifier"
+        
+        logging.info('Neural Network meta learner created')
         return keras_clf  # Return the KerasClassifier
     
     except Exception as e:
