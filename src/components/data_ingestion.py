@@ -68,6 +68,8 @@ class DataIngestion:
             # save raw pandas data to csv
             resampled_data.to_csv(self.ingestion_config.raw_data_path, index=False, header=True)
             
+            # print('Resampled data shape:', resampled_data.shape)
+            
             train_data, test_data = train_test_split(resampled_data, test_size=0.2, random_state=62)
             logging.info('Train and Test data created')
             
