@@ -8,4 +8,8 @@ tensorflow
 scikeras
 mlens
 dill
+gradio
+tokenizers
+transformers
+torch
 -e .
