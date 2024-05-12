@@ -9,7 +9,6 @@ from keras_preprocessing import image
 from keras_preprocessing.image import ImageDataGenerator
 
 from src.exception import CustomException
-from src.logger import logging
 
 # from tensorflow.keras.preprocessing import ImageDataGenerator
 
