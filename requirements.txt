@@ -8,6 +8,7 @@ tensorflow
 scikeras
 mlens
 dill
+opencv--python
 gradio
 tokenizers
 transformers

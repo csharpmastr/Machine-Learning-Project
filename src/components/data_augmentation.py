@@ -5,8 +5,10 @@ import matplotlib.pyplot as plt
 import sys
 import numpy as np
 import keras_preprocessing
-from keras_preprocessing import image
-from keras_preprocessing.image import ImageDataGenerator
+import tensorflow as tf
+
+from keras.preprocessing import image
+from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 
 from src.exception import CustomException
 

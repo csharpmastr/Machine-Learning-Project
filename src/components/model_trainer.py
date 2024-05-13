@@ -280,10 +280,11 @@ def build_fit_neural_network_model(meta_x, meta_y):
             keras.layers.Input(shape=(meta_x.shape[1],)),
             keras.layers.Dense(128, activation='relu'),  # First hidden layer         
             keras.layers.Dense(64, activation='relu'),  # Second hidden layer   
-            keras.layers.Dropout(0.3),  # Regularization
+            keras.layers.Dropout(0.4),  # Regularization
             keras.layers.Dense(64, activation='tanh'),
             keras.layers.Dense(32, activation='relu'),
-            keras.layers.Dropout(0.2), # Another penalty
+            keras.layers.Dropout(0.3), # Another penalty
+            keras.layers.Dense(24, activation='relu'),
             keras.layers.Dense(meta_y.shape[1], activation='softmax')  # Output layer (multi-class classification)
         ])
         

@@ -1,5 +1,6 @@
 import sys
 import os
+import numpy as np
 from dataclasses import dataclass
 
 # libraries for data cleaning and transformation
@@ -51,22 +52,12 @@ class DataTransformation:
                 'AGE'
                 ]
             # select all categorical / discrete columns
-            cat_cols = ['Gender_F','Gender_M','CLASS_N','CLASS_P','CLASS_Y']
+            cat_cols = ['Gender_F','Gender_M']
             
             # prepare pipeline for numerical columns
             num_pipeline = Pipeline(
                 steps=[('scaler', StandardScaler(with_mean=False))]
             )
-            
-            # Pass-through transformer for categorical columns (no processing)
-            pass_through = lambda x: x
-            
-            # prepare pipeline for categorical columns
-            # cat_pipeline = Pipeline(
-            #     steps=[
-            #         ('one_hot_encoder', OneHotEncoder(handle_unknown='ignore'))
-            #     ]
-            # )
             
             # pass logging info
             logging.info("Scaling of Numerical Columns is completed")
@@ -112,14 +103,25 @@ class DataTransformation:
             preprocessor_obj = self.get_data_transformer_obj()
             logging.info('Preprocessor object obtained')
             
+            print("index 1 of train_df: ", train_df.iloc[0:1, :])
+            print("Shape of the train_df: ", train_df.shape)
+            
+            # get target variable from train and test data
+            train_target = train_df.iloc[:, -3:]
+            test_target = test_df.iloc[:, -3:]
+            
             # apply preprocessor object
             input_feature_train_arr = preprocessor_obj.fit_transform(train_df)
             input_feature_test_arr = preprocessor_obj.transform(test_df) 
             
-            # print("index 1 of train data: ", input_feature_train_arr[1])
-            # print("Shape of the train data: ", input_feature_train_arr.shape)
-            # print("index 1 of test data: ", input_feature_test_arr[1])
-            # print("Shape of the test data: ", input_feature_test_arr.shape)
+            # concat target and pre-processed data
+            input_feature_train_arr = np.c_[input_feature_train_arr, np.array(train_target)]
+            input_feature_test_arr = np.c_[input_feature_test_arr, np.array(test_target)]
+            
+            print("index 1 of train data: ", input_feature_train_arr[1])
+            print("Shape of the train data: ", input_feature_train_arr.shape)
+            print("index 1 of test data: ", input_feature_test_arr[1])
+            print("Shape of the test data: ", input_feature_test_arr.shape)
             
             
             logging.info(
