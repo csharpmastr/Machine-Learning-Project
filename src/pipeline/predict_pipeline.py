@@ -1,5 +1,6 @@
 import sys
 import pandas as pd
+import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 from src.exception import CustomException
 from src.logger import logging
@@ -20,9 +21,6 @@ class PredictPipeline:
             meta_learner=load_object(file_path=meta_learner_path)
             preprocessor=load_object(file_path=preprocessor_path)
             
-            print("Meta Learner type:",type(meta_learner))
-            print("Base Learner type:",type(base_model))
-            print("Preprocessor type:",type(preprocessor))
             logging.info("Base Models, and Meta Learner has been loaded for prediction")
             
             # preprocess input data using preprocessor object
@@ -34,12 +32,27 @@ class PredictPipeline:
             
             logging.info("Prediction has been made on user's input")
             
-            print("Model's prediction array:", prediction)
-            
             prediction_list = prediction.tolist()
             logging.info("Prediction has been converted into a list object")
             
-            return prediction_list
+            print("Prediction before flatten:", prediction_list)
+            
+        #  prediction_base = np.argmax(prediction_list, axis=1)
+            
+        #     print("Prediction after flatten:", prediction_base)   
+            
+            interpretted_prediction = ""
+            
+            if prediction_list[0][0] == 1:
+                interpretted_prediction = "Patient has No Diabetes"
+            elif prediction_list[0][1] == 1:
+                interpretted_prediction = "Patient is Pre-Diabetic"
+            elif prediction_list[0][2] == 1:
+                interpretted_prediction = "Patient is Diabetic"
+            else:
+                pass
+            
+            return interpretted_prediction
         except Exception as e:
             raise CustomException(e, sys)
         

@@ -11,28 +11,60 @@ try:
                             border: solid 5px;
                             color: black;
                             -webkit-text-stroke: 1px white;
-                            font-weight: bolder;
-                            font-size: 25px}
+                            font-weight: 800;
+                            font-size: 30px}
                   #clear {background-color: red; 
                             border: solid 5px;
                             color: black;
                             -webkit-text-stroke: 1px white;
-                            font-weight: bolder;
-                            font-size: 25px}
+                            font-weight: 800;
+                            font-size: 30px}
                   #md {-webkit-text-stroke: 1px white}
+                  #output textarea {text-align: center; 
+                            font-size: 32px;
+                            background-color: #2E4052;
+                            -webkit-text-stroke: 0.5px #BDD9BF;
+                            font-weight: 800;
+                            color: #000000}
+                  #label {text-align: center;
+                            justify-content: center;
+                            -webkit-text-stroke: 1px white;
+                            font-size:28px;
+                            margin-top: 5%;
+                            font-weight: 800}
                       """
     top_css = """<p style='text-align: center;
                 font-size:60px;
                 color: #2E4052;
                 font-weight: Bolder'>Diabetes Prediction Test</p>"""
                 
-    bot_css = """<span style='text-align: center;
-                justify-content: center;
-                -webkit-text-stroke: 1px white;
-                font-size:32px;
-                color: #2E4052;
-                font-weight: 800'>Patient Status</span>"""
+    # bot_css = """<span style='text-align: center;
+    #             justify-content: center;
+    #             -webkit-text-stroke: 1px white;
+    #             font-size:32px;
+    #             color: #2E4052;
+    #             font-weight: 800'>Patient Status</span>"""
+    # bot_css = """#label {text-align: center;
+    #             justify-content: center;
+    #             -webkit-text-stroke: 1px white;
+    #             font-size:32px;
+    #             color: #2E4052;
+    #             margin-top: 10%;
+    #             font-weight: 800}"""
+                
+    js_change_bg_color = """
+                        function changeTextboxColor() {
+                            var outputBox = document.getElementById("output");
+                            
+                            if (outputBox === "Patient has No Diabetes") {
+                                outputBox.style.background-color = 'linear-gradient(to right, yellow, green)';
+                            }
+                        }
+                         """
     body_font = gr.themes.GoogleFont("Rubik")
+    
+    def sample(name):
+        return f"Welcome to Gradio, {name}!"
 
     with gr.Blocks(theme=gr.themes.Base(primary_hue=gr.themes.colors.slate, secondary_hue=gr.themes.colors.blue, neutral_hue=gr.themes.colors.slate,font=body_font), css=base_css) as block:
         gr.Markdown(top_css, elem_id=["md"])
@@ -78,12 +110,14 @@ try:
                 
         with gr.Row():
             with gr.Column():
-                text = gr.Markdown(bot_css)
-                output = gr.Textbox(placeholder="Awaiting Prediction", show_label=False, container=False)
+                text = gr.Label(value="Patient Status", elem_id=["label"], show_label=False)
+                output = gr.Textbox(placeholder="Awaiting Prediction", show_label=False, elem_id=["output"], container=False, interactive=False)
+                output.change(fn=sample, js=js_change_bg_color, inputs=output)
                 button.click(fn=diabetes_prediction, inputs=input_data, outputs=output) 
             
-        
-        gr.Examples([[57,3.0,60.0,7.9,4.8,2.4,1.8,2.0,1.1,27]],
+        gr.Examples([[53,2.0,55.0,7.7,4.4,3.3,0.9,2.1,1.5,32],
+                     [47,4.0,45,4.2,4.0,1.3,0.9,2.6,1.0,23.0],
+                     [49,3.3,44,6.0,5.6,1.9,0.75,1.35,0.8,21.0]],
                     inputs=input_data, label="Example Data")
             
         
