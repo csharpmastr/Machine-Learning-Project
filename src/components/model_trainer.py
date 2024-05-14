@@ -38,7 +38,8 @@ from src.utils import EarlyStopping, save_object, plot_learning_curve
 
 @dataclass
 class ModelTrainerConfig:
-    trained_model_file_path = os.path.join("artifacts", "model.pkl")
+    trained_meta_learner_file_path = os.path.join("artifacts", "meta_learner.pkl")
+    trained_base_model_file_path = os.path.join("artifacts", "base_model.pkl")
     
 class ModelTrainer:
     def __init__(self):
@@ -84,7 +85,7 @@ class ModelTrainer:
             meta_learner = build_fit_neural_network_model(meta_x, meta_y)
             logging.info('Meta learner trained')
             
-            yhat = meta_learner_predictions(x_test, y_test, base_model, meta_learner)
+            yhat = meta_learner_predictions(x_test, base_model, meta_learner)
             yhat_df = pd.DataFrame(yhat)
             
             y_test_reshape = np.argmax(y_test, axis=1)
@@ -118,10 +119,19 @@ class ModelTrainer:
             
             logging.info('All Models have been evaluated in CV')
             
+            print("Meta Learner type:", type(meta_learner))
+            print("Base Learner type:", type(base_model))
+            
+            # save base models
+            save_object(
+                file_path=self.model_trainer_config.trained_base_model_file_path,
+                obj=base_model
+            )
+       
             # save ensemble model
             save_object(
-                file_path=self.model_trainer_config.trained_model_file_path,
-                obj=meta_learner
+                file_path=self.model_trainer_config.trained_meta_learner_file_path,
+                obj= meta_learner
             )
             
             logging.info('Ensemble Model has been saved')
@@ -232,18 +242,14 @@ def evaluate_models(x, y, models):
         raise CustomException(e, sys)
     
 # make predictions with the Stacked Model
-def meta_learner_predictions(x, y, models, meta_learner):
+def meta_learner_predictions(x, models, meta_learner):
     try:
         meta_x = list()
-        y_labels = np.argmax(y, axis=1)
         
         logged = False
         
         for model in models:
                 yhat = model.predict_proba(x)
-                
-                acc = accuracy_score(y_labels, np.argmax(yhat, axis=1))
-                print('%s: %.3f' % (model.__class__.__name__, acc*100))
                 
                 meta_x.append(yhat)
                 

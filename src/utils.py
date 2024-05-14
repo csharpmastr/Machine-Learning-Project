@@ -5,6 +5,7 @@ import sys
 import pandas as pd
 import numpy as np
 import dill
+import pickle
 
 from scikeras.wrappers import KerasClassifier
 
@@ -78,16 +79,40 @@ def vizScaling(scaled_data, pre_scaled_data, scaling_method='', sample_method=''
 # function to save object to folder
 def save_object(file_path, obj):
     try:
+        # if type(file_path) is list:
+        #     for path in file_path:
+        #         dir_path = os.path.dirname(path)
+        #         print("Directory Path:", dir_path)
+        #         print("File Path:", path)
+                
+        #         # create directory
+        #         os.makedirs(dir_path, exist_ok=True)
+                
+        #         with open(path, "wb") as file_obj:
+        #             pickle.dump(obj, file_obj)
+        #             pickle.dump(add_obj, file_obj)
+        # else:
+            
         dir_path = os.path.dirname(file_path)
         
         print("Directory Path:", dir_path)
         print("File Path:", file_path)
-
+        
         # create directory
         os.makedirs(dir_path, exist_ok=True)
-        
+            
         with open(file_path, "wb") as file_obj:
-            dill.dump(obj, file_obj)
+            pickle.dump(obj, file_obj)
+            
+        # if add_file_path is not None:
+        #     dir_path = os.path.dirname(add_file_path)
+        #     print("Directory Path:", dir_path)
+        #     print("File Path:", add_file_path)
+            
+        #     os.makedirs(dir_path, exist_ok=True)
+            
+        #     with open(file_path, "wb") as file_obj:
+        #         pickle.dump(add_obj, file_obj)
         
     except Exception as e:
         raise CustomException(e, sys)
@@ -96,7 +121,7 @@ def save_object(file_path, obj):
 def load_object(file_path):
     try:
         with open(file_path, "rb") as file_obj:
-            return dill.load(file_obj)
+            return pickle.load(file_obj)
     except Exception as e:
         raise CustomException(e, sys)
 

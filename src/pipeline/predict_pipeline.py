@@ -4,6 +4,7 @@ from sklearn.preprocessing import OneHotEncoder
 from src.exception import CustomException
 from src.logger import logging
 from src.utils import load_object
+from src.components.model_trainer import meta_learner_predictions
 
 class PredictPipeline:
     def __init__(self):
@@ -11,19 +12,34 @@ class PredictPipeline:
     
     def predict(self, features):
         try:
-            model_path = 'artifacts\model.pkl'
+            base_model_path = "artifacts\\base_model.pkl"
+            meta_learner_path = 'artifacts\meta_learner.pkl'
             preprocessor_path = 'artifacts\preprocessor.pkl'
             # load objects from file
-            model=load_object(file_path=model_path)
+            base_model=load_object(file_path=base_model_path)
+            meta_learner=load_object(file_path=meta_learner_path)
             preprocessor=load_object(file_path=preprocessor_path)
+            
+            print("Meta Learner type:",type(meta_learner))
+            print("Base Learner type:",type(base_model))
+            print("Preprocessor type:",type(preprocessor))
+            logging.info("Base Models, and Meta Learner has been loaded for prediction")
             
             # preprocess input data using preprocessor object
             scaled_data=preprocessor.transform(features)
             
+            logging.info("User input has been preprocessed and ready for prediction")
             # make predictions on scaled data using the model object
-            prediction = model.predict(scaled_data)
+            prediction = meta_learner_predictions(scaled_data, base_model, meta_learner)
             
-            return prediction
+            logging.info("Prediction has been made on user's input")
+            
+            print("Model's prediction array:", prediction)
+            
+            prediction_list = prediction.tolist()
+            logging.info("Prediction has been converted into a list object")
+            
+            return prediction_list
         except Exception as e:
             raise CustomException(e, sys)
         
@@ -110,6 +126,12 @@ def diabetes_prediction(age: float,
         #             "BMI": BMI,
         #             "Gender": Gender
         #         }
+        gender_M = 0
+        gender_F = 0
+        if Gender == 'Male':
+            gender_M = 1
+        else:
+            gender_F = 1
         
         custom_data_input = {
                     "AGE": [age],
@@ -122,16 +144,12 @@ def diabetes_prediction(age: float,
                     "LDL": [LDL],
                     "VLDL": [VLDL],
                     "BMI": [BMI],
-                    "Gender": [Gender]
+                    "Gender_F": [gender_F],
+                    "Gender_M": [gender_M]
                 }
                 
         input_df =  pd.DataFrame(custom_data_input)
-        gender_df = input_df['Gender']
-        encoder = OneHotEncoder(categories='auto', handle_unknown='ignore', sparse_output=False)
-        
-        # encode Gender column
-        gender_df = encoder.fit_transform(gender_df)
-        print(input_df)
+        print(input_df.iloc[0:1, :])
         
         # make predictions
         predict_pipeline = PredictPipeline()
