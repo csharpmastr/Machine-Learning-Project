@@ -13,7 +13,7 @@ from numpy import asarray
 # from sklearn import metrics
 # from sklearn.decomposition import PCA
 # from sklearn.discriminant_analysis import StandardScaler
-from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.model_selection import KFold, StratifiedKFold, cross_val_score, train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, hamming_loss, f1_score
 
 from sklearn.linear_model import LogisticRegression
@@ -246,16 +246,10 @@ def meta_learner_predictions(x, models, meta_learner):
     try:
         meta_x = list()
         
-        logged = False
-        
         for model in models:
                 yhat = model.predict_proba(x)
                 
                 meta_x.append(yhat)
-                
-                if not logged:
-                    print('meta_x value after append:', meta_x)
-                    logged = True
         
         meta_x = hstack(meta_x)
 
@@ -308,7 +302,7 @@ def build_fit_neural_network_model(meta_x, meta_y):
         keras_clf = KerasClassifier(model=nn_model,
                                    epochs=100,
                                    batch_size=32,
-                                   verbose=1)
+                                   verbose=0)
         
         # declare model as a classifier
         keras_clf._estimator_type = 'classifier'
@@ -327,6 +321,16 @@ def build_fit_neural_network_model(meta_x, meta_y):
         )
         
         logging.info('Neural Network meta learner has been trained')
+        
+        kf = KFold(n_splits=10, shuffle=True, random_state=32)
+        cv_score = cross_val_score(keras_clf, x_train, y_train, cv=kf)
+        
+        print(f'Cross-Validation Scores: {cv_score}')
+        print(f'Mean CV Score: {cv_score.mean()}')
+        print(f'Standard Deviation of CV Scores: {cv_score.std()}')
+        
+        logging.info('Neural Network meta learner has been evaluated')
+
         return keras_clf
         
     except Exception as e:

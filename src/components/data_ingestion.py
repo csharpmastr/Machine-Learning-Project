@@ -58,19 +58,19 @@ class DataIngestion:
             x_features = encoded_data.iloc[:, 0:12]
             y_target = encoded_data.iloc[:, 12:]
             
-            smote = SMOTE(random_state=42)
-            x_resampled, y_resampled = smote.fit_resample(x_features.to_numpy(), y_target.to_numpy())
+            # smote = SMOTE(random_state=42)
+            # x_resampled, y_resampled = smote.fit_resample(x_features.to_numpy(), y_target.to_numpy())
             
-            x_data = pd.DataFrame(x_resampled, columns=x_features.columns)
-            y_data = pd.DataFrame(y_resampled, columns=y_target.columns)
-            resampled_data = pd.concat([x_data, y_data], axis=1)
+            x_data = pd.DataFrame(x_features, columns=x_features.columns)
+            y_data = pd.DataFrame(y_target, columns=y_target.columns)
+            data = pd.concat([x_data, y_data], axis=1)
             
             # save raw pandas data to csv
-            resampled_data.to_csv(self.ingestion_config.raw_data_path, index=False, header=True)
+            data.to_csv(self.ingestion_config.raw_data_path, index=False, header=True)
             
             # print('Resampled data shape:', resampled_data.shape)
             
-            train_data, test_data = train_test_split(resampled_data, test_size=0.2, random_state=62)
+            train_data, test_data = train_test_split(data, test_size=0.2, random_state=62)
             logging.info('Train and Test data created')
             
             # save train and test data to csv

@@ -8,6 +8,8 @@ import pandas as pd
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
+from imblearn.over_sampling import SMOTE
+from imblearn.combine import SMOTETomek, SMOTEENN
 
 # libraries for logging and exception handling
 from src.exception import CustomException
@@ -99,6 +101,17 @@ class DataTransformation:
             test_df = pd.read_csv(test_path)
             
             logging.info('Train and Test data import completed')
+            
+            # apply oversampling to train_df
+            x_features = train_df.iloc[:, 0:12]
+            y_target = train_df.iloc[:, 12:]
+            
+            smote = SMOTETomek(random_state=42)
+            x_resampled, y_resampled = smote.fit_resample(x_features.to_numpy(), y_target.to_numpy())
+            
+            x_data = pd.DataFrame(x_resampled, columns=x_features.columns)
+            y_data = pd.DataFrame(y_resampled, columns=y_target.columns)
+            train_df = pd.concat([x_data, y_data], axis=1)
             
             preprocessor_obj = self.get_data_transformer_obj()
             logging.info('Preprocessor object obtained')
