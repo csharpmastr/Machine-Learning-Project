@@ -35,12 +35,6 @@ class PredictPipeline:
             prediction_list = prediction.tolist()
             logging.info("Prediction has been converted into a list object")
             
-            print("Prediction before flatten:", prediction_list)
-            
-        #  prediction_base = np.argmax(prediction_list, axis=1)
-            
-        #     print("Prediction after flatten:", prediction_base)   
-            
             interpretted_prediction = ""
             
             if prediction_list[0][0] == 1:

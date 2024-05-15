@@ -69,11 +69,6 @@ class ModelTrainer:
             meta_x, meta_y = get_out_of_folds(x_train, y_train, base_model)
             logging.info('Out of folds obtained')
             
-            print('Meta X shape:', meta_x.shape)
-            print('Meta Y shape:', meta_y.shape)
-            print('Meta X data_type after folds:', meta_x.dtype)
-            print('Meta Y data_type after folds:', meta_y.dtype)
-            
             # fit base models
             fit_base_models(x_train, y_train, base_model)
             logging.info('Base models fitted')
@@ -86,12 +81,9 @@ class ModelTrainer:
             logging.info('Meta learner trained')
             
             yhat = meta_learner_predictions(x_test, base_model, meta_learner)
-            yhat_df = pd.DataFrame(yhat)
             
             y_test_reshape = np.argmax(y_test, axis=1)
             yhat_reshape = np.argmax(yhat, axis=1)
-            
-            print('yhat values at index 1:3', yhat_df)
             
             print('yhat shape:', yhat.shape)
             print('ytest shape:', y_test.shape)
@@ -119,9 +111,6 @@ class ModelTrainer:
             
             logging.info('All Models have been evaluated in CV')
             
-            print("Meta Learner type:", type(meta_learner))
-            print("Base Learner type:", type(base_model))
-            
             # save base models
             save_object(
                 file_path=self.model_trainer_config.trained_base_model_file_path,
@@ -148,10 +137,10 @@ def get_base_models():
         models = list()
         # models.append(LogisticRegression(random_state=52, solver='lbfgs', multi_class='multinomial', max_iter=450))
         models.append(ExtraTreesClassifier(n_estimators=10))
-        models.append(KNeighborsClassifier(n_neighbors=5, metric='euclidean'))
+        models.append(KNeighborsClassifier(n_neighbors=8, metric='euclidean'))
         models.append(SVC(gamma='scale', decision_function_shape='ovr', probability=True))
         models.append(RandomForestClassifier(max_depth=5, n_estimators=120))
-        models.append(AdaBoostClassifier(random_state=12, algorithm='SAMME'))
+        models.append(AdaBoostClassifier(random_state=12, algorithm='SAMME', n_estimators=100))
         models.append(BaggingClassifier(n_estimators=20))
         models.append(GaussianNB())
         return models
@@ -196,9 +185,6 @@ def get_out_of_folds(x, y, models):
             meta_x.append(hstack(fold_yhat))
         
         logging.info("Out of fold predictions stored")
-         
-        print('meta_x length:', len(meta_x))  
-        print('meta_y length:', len(meta_y))
         
         meta_x = vstack(meta_x)
         meta_y = asarray(meta_y)
@@ -253,17 +239,8 @@ def meta_learner_predictions(x, models, meta_learner):
         
         meta_x = hstack(meta_x)
 
-        # apply PCA to retain important features
-        # pca = PCA(n_components=9)
-        # meta_x = pca.fit_transform(meta_x)
-        # print('meta_x_pca shape', meta_x.shape)
-        # meta_x = meta_x.reshape(x.shape[0], -1)
-        print('yhat shape', yhat.shape)
-        print('meta_x shape after predict', meta_x.shape)
-        
-        # meta_x = meta_x.astype(np.int64)
         meta_x = vstack(meta_x)
-        # predict
+        # make prediction on meta learner
         prediction = meta_learner.predict(meta_x)
         
         logging.info('Meta Learner has been evaluated')
