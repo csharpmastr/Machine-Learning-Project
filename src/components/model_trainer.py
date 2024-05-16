@@ -13,28 +13,25 @@ from numpy import asarray
 # from sklearn import metrics
 # from sklearn.decomposition import PCA
 # from sklearn.discriminant_analysis import StandardScaler
-from sklearn.model_selection import KFold, StratifiedKFold, cross_val_score, train_test_split
+from sklearn.model_selection import KFold, StratifiedKFold, cross_val_score, train_test_split, GridSearchCV, RandomizedSearchCV
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, hamming_loss, f1_score
 
-from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
-# from sklearn.preprocessing import OneHotEncoder
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import BaggingClassifier
 from sklearn.ensemble import AdaBoostClassifier, ExtraTreesClassifier
-# from mlxtend.classifier import MultiOutputClassifier
+
 
 import tensorflow as tf
 from tensorflow import keras
+from tensorflow.keras.layers import BatchNormalization
 from scikeras.wrappers import KerasClassifier
-# from mlens.ensemble import SuperLearner
 
 from src.exception import CustomException
 from src.logger import logging
 from src.utils import EarlyStopping, save_object, plot_learning_curve
-# from src.utils import evaluate_base_model
 
 @dataclass
 class ModelTrainerConfig:
@@ -61,7 +58,7 @@ class ModelTrainer:
             print(f"Train Data: {x_train.shape, y_train.shape}, \nTest: {x_test.shape, y_test.shape}")
             
             # get base models for evaluation
-            base_model = get_base_models()
+            base_model = tune_base_models(x_train, np.argmax(y_train, axis=1))
             
             logging.info('Base models obtained')
             
@@ -130,23 +127,79 @@ class ModelTrainer:
         except Exception as e:
             raise CustomException(e,sys)
 
-
-# create list of models
-def get_base_models():
+# function to tune base models
+def tune_base_models(x_train, y_train):
     try:
-        models = list()
-        # models.append(LogisticRegression(random_state=52, solver='lbfgs', multi_class='multinomial', max_iter=450))
-        models.append(ExtraTreesClassifier(n_estimators=10))
-        models.append(KNeighborsClassifier(n_neighbors=8, metric='euclidean'))
-        models.append(SVC(gamma='scale', decision_function_shape='ovr', probability=True))
-        models.append(RandomForestClassifier(max_depth=5, n_estimators=120))
-        models.append(AdaBoostClassifier(random_state=12, algorithm='SAMME', n_estimators=100))
-        models.append(BaggingClassifier(n_estimators=20))
-        models.append(GaussianNB())
-        return models
+        # param grid initialization
+        param_grids = {
+            'ExtraTreesClassifier': {
+                'n_estimators': [10, 50, 100],
+                'criterion': ['gini', 'entropy', 'log_loss']
+            },
+            'KNeighborsClassifier': {
+                'n_neighbors': range(1, 21, 2),
+                'weights': ['uniform', 'distance'],
+                'metric': ['euclidean', 'manhattan', 'minkowski']
+            },
+            'SVC': {
+                'C': [0.01, 0.1, 1, 10, 50],
+                'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
+                'gamma': ['scale', 'auto'],
+                'decision_function_shape': ['ovo', 'ovr'],
+                'probability': [True]
+            },
+            'RandomForestClassifier': {
+                'n_estimators': [50, 100, 200],
+                'max_features': ['sqrt', 'log2'],
+                'max_depth': [None, 10, 20, 30]
+            },
+            'AdaBoostClassifier': {
+                'n_estimators': [50, 100, 200],
+                'algorithm': ['SAMME'],
+                'learning_rate': [0.01, 0.1, 1]
+            },
+            'BaggingClassifier': {
+                'n_estimators': [10, 20, 50, 100],
+                'max_samples': [0.5, 1.0]
+            }
+        }
+        
+        tuned_models = []
+        
+        for model_name, param_grid in param_grids.items():
+            model = eval(f"{model_name}()")
+            search = GridSearchCV(model, param_grid, cv=5, scoring='accuracy')
+            search.fit(x_train, y_train)
+            best_model = search.best_estimator_
+            tuned_models.append(best_model)
+            print(f"Best parameters for {model_name}: {search.best_params_}")
+            print(f"Best score for {model_name}: {search.best_score_}")
+        
+        # append GNB since no hyperparameters needed to be tuned
+        tuned_models.append(GaussianNB())
+        
+        return tuned_models
     
     except Exception as e:
         raise CustomException(e, sys)
+    
+
+# create list of models
+# def get_base_models():
+#     try:
+#         models = list()
+#         # models.append(LogisticRegression(random_state=52, solver='lbfgs', multi_class='multinomial', max_iter=450))
+#         models.append(ExtraTreesClassifier(n_estimators=10))
+#         models.append(KNeighborsClassifier(n_neighbors=8, metric='euclidean'))
+#         models.append(SVC(gamma='scale', decision_function_shape='ovr', probability=True))
+#         models.append(RandomForestClassifier(max_depth=5, n_estimators=120))
+#         models.append(AdaBoostClassifier(random_state=12, algorithm='SAMME', n_estimators=100))
+#         models.append(BaggingClassifier(n_estimators=20))
+#         models.append(GaussianNB())
+#         return models
+    
+#     except Exception as e:
+#         raise CustomException(e, sys)
     
 def get_out_of_folds(x, y, models):
     try:
@@ -255,17 +308,24 @@ def build_fit_neural_network_model(meta_x, meta_y):
         # Define your neural network
         nn_model = tf.keras.Sequential([
             keras.layers.Input(shape=(meta_x.shape[1],)),
-            keras.layers.Dense(128, activation='relu'),  # First hidden layer         
-            keras.layers.Dense(64, activation='relu'),  # Second hidden layer   
-            keras.layers.Dropout(0.4),  # Regularization
+            keras.layers.Dense(128, activation='relu'),  # First hidden layer   
+            BatchNormalization(),      
+            keras.layers.Dense(128, activation='relu'),  # Second hidden layer   
+            BatchNormalization(),
+            keras.layers.Dropout(0.3),  # Regularization
             keras.layers.Dense(64, activation='tanh'),
-            keras.layers.Dense(32, activation='relu'),
+            BatchNormalization(),
+            keras.layers.Dense(64, activation='relu'),
+            BatchNormalization(),
             keras.layers.Dropout(0.3), # Another penalty
-            keras.layers.Dense(24, activation='relu'),
+            keras.layers.Dense(64, activation='relu'),
+            BatchNormalization(),
+            keras.layers.Dense(64, activation='relu'),
+            keras.layers.Dense(32, activation='relu'),
             keras.layers.Dense(meta_y.shape[1], activation='softmax')  # Output layer (multi-class classification)
         ])
         
-        opt = tf.keras.optimizers.Adam(learning_rate=0.001)
+        opt = tf.keras.optimizers.Nadam(learning_rate=0.001, beta_1=0.9)
         
         # Compile the model
         nn_model.compile(
@@ -299,7 +359,7 @@ def build_fit_neural_network_model(meta_x, meta_y):
         
         logging.info('Neural Network meta learner has been trained')
         
-        kf = KFold(n_splits=10, shuffle=True, random_state=32)
+        kf = KFold(n_splits=7, shuffle=True, random_state=32)
         cv_score = cross_val_score(keras_clf, x_train, y_train, cv=kf)
         
         print(f'Cross-Validation Scores: {cv_score}')
@@ -309,6 +369,5 @@ def build_fit_neural_network_model(meta_x, meta_y):
         logging.info('Neural Network meta learner has been evaluated')
 
         return keras_clf
-        
     except Exception as e:
         raise CustomException(e, sys)

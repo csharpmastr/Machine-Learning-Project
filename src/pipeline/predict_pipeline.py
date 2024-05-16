@@ -50,56 +50,6 @@ class PredictPipeline:
         except Exception as e:
             raise CustomException(e, sys)
         
-
-# class CustomData:
-#     def __init__(self,
-#                  age: float,
-#                  urea: float,
-#                  cr: float,
-#                  hbA1c: float,
-#                  chol: float,
-#                  tg: float,
-#                  HDL: float,
-#                  LDL: float,
-#                  VLDL: float,
-#                  BMI: float,
-#                  Gender: str):
-#         self.age = age
-#         self.urea = urea
-#         self.cr = cr
-#         self.hbA1c = hbA1c
-#         self.chol = chol
-#         self.tg = tg
-#         self.HDL = HDL,
-#         self.LDL = LDL
-#         self.VLDL = VLDL
-#         self.BMI = BMI
-#         self.Gender = Gender
-    
-#     def convert_data_as_dataframe(self):
-#         try:
-#             if any(value is None or (isinstance(value, str) and not value.strip()) for value in vars(self).values()):
-#                 error_message = '<span style="color: red;font-size:25px;">Please fill in all the input fields.</span>'
-#                 return error_message
-            
-#             custom_data_input = {
-#                 "AGE": [self.age],
-#                 "Urea": [self.urea],
-#                 "Cr": [self.cr],
-#                 "HbA1c": [self.hbA1c],
-#                 "Chol": [self.chol],
-#                 "TG": [self.tg],
-#                 "HDL": [self.HDL],
-#                 "LDL": [self.LDL],
-#                 "VLDL": [self.VLDL],
-#                 "BMI": [self.BMI],
-#                 "Gender": [self.Gender]
-#             }
-            
-#             return pd.DataFrame(custom_data_input)
-#         except Exception as e:
-#             raise CustomException(e, sys)
-        
 def diabetes_prediction(age: float,
                  urea: float,
                  cr: float,
@@ -118,21 +68,7 @@ def diabetes_prediction(age: float,
                 tg is None, HDL is None, LDL is None, VLDL is None, BMI is None, Gender is None]):
             error_message = '<span style="color: red;font-size:25px;">Please fill in all the input fields.</span>'
             return error_message
-
-        # create dictionary of input data
-        # custom_data_input = {
-        #             "AGE": age,
-        #             "Urea": urea,
-        #             "Cr": cr,
-        #             "HbA1c": hbA1c,
-        #             "Chol": chol,
-        #             "TG": tg,
-        #             "HDL": HDL,
-        #             "LDL": LDL,
-        #             "VLDL": VLDL,
-        #             "BMI": BMI,
-        #             "Gender": Gender
-        #         }
+        
         gender_M = 0
         gender_F = 0
         if Gender == 'Male':
