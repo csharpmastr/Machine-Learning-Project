@@ -145,8 +145,7 @@ def plot_learning_curve(model):
         plt.show()
     except Exception as e:
         raise CustomException(e, sys)
-
-
+    
 class EarlyStopping(tf.keras.callbacks.Callback):
     """
     Custom callback for early stopping based on validation accuracy
