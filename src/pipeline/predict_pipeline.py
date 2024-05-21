@@ -50,8 +50,7 @@ class PredictPipeline:
         except Exception as e:
             raise CustomException(e, sys)
         
-def diabetes_prediction(age: float,
-                 urea: float,
+def diabetes_prediction(urea: float,
                  cr: float,
                  hbA1c: float,
                  chol: float,
@@ -60,6 +59,7 @@ def diabetes_prediction(age: float,
                  LDL: float,
                  VLDL: float,
                  BMI: float,
+                 age: float,
                  Gender: str):
     
     try:

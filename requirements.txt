@@ -13,4 +13,7 @@ gradio
 tokenizers
 transformers
 torch
+pydantic
+fastapi
+uvicorn
 -e .

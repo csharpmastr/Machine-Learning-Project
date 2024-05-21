@@ -4,7 +4,9 @@ import os
 import sys
 import pandas as pd
 import numpy as np
-import dill
+import requests
+import json
+import httpx
 import pickle
 
 from scikeras.wrappers import KerasClassifier
@@ -145,6 +147,7 @@ def plot_learning_curve(model):
         plt.show()
     except Exception as e:
         raise CustomException(e, sys)
+    
     
 class EarlyStopping(tf.keras.callbacks.Callback):
     """
