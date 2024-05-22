@@ -1,4 +1,5 @@
 import sys
+from tkinter import Label
 import gradio as gr
 import numpy
 import requests
@@ -34,21 +35,12 @@ try:
                             font-size:28px;
                             margin-top: 5%;
                             font-weight: 800}
+                  #gender {height: 100px}
                       """
     top_css = """<p style='text-align: center;
                 font-size:60px;
                 color: #2E4052;
                 font-weight: 800'>Diabetes Prediction Test</p>"""
-                
-    js_change_bg_color = """
-                        function changeTextboxColor() {
-                            var outputBox = document.getElementById("output");
-                            
-                            if (outputBox === "Patient has No Diabetes") {
-                                outputBox.style.background-color = 'linear-gradient(to right, yellow, green)';
-                            }
-                        }
-                         """
     body_font = gr.themes.GoogleFont("Rubik")
     
     def change_color(prediction):
@@ -64,6 +56,29 @@ try:
                 return gr.Label(value="No Prediction Made!", color="#ff0030", show_label=False, elem_id=["output"])
         except Exception as e:
             raise CustomException(e, sys)
+    
+    def change_unit_measurement(unit):
+        if unit == "mg/dL":
+            return  [
+                    gr.Number(label="Cholesterol", minimum=0, maximum=20, info="Total Cholesterol of patient in mg/dL (<5.2 - Desirable), (5.2 to 6.1 - Borderline High), (6.1 - High)"),
+                    gr.Number(label="Low Density Lipoprotein", minimum=0, maximum=20, info="Patient's LDL level in mg/dL (<2.6 - Optimal), (2.6 to 3.3 - Desirable), (3.4 to 4.0 - Borderline High), (4.1 to 4.8 - High), (4.8 - Very High)"),
+                    gr.Number(label="High Density Lipoprotein", minimum=0, maximum=20, info="Patient's HDL level in mg/dL (<1.0 - Low), (1.0 to 1.5 - Desirable), (1.5 - High)"),
+                    gr.Number(label="Very Low Density Lipoprotein", minimum=0, maximum=20, info="Patient's VLDL in mg/dL"),
+                    gr.Number(label="Triglyceride", minimum=0, maximum=20, info="Patient's Triglyceride Level in mg/dL (1.69 to 2.25: Desirable)"),
+                    gr.Number(label="Creatinine", minimum=0, info="Patient's Creatinine level in mg/dL (Normal Range for Male Adult: 60 to 110) (Normal Range for Female Adult: 45 to 90 - Normal)"),
+                    gr.Number(label="Urea", minimum=0, maximum=20, info="Patient's Blood Urea Nitrogen in mg/dL")
+            ]
+        else:
+            return [
+                    gr.Number(label="Cholesterol", minimum=0, maximum=20, info="Total Cholesterol of patient in mmol/L (<5.2 - Desirable), (5.2 to 6.1 - Borderline High), (6.1 - High)"),
+                    gr.Number(label="Low Density Lipoprotein", minimum=0, maximum=20, info="Patient's LDL level in mmol/L (<2.6 - Optimal), (2.6 to 3.3 - Desirable), (3.4 to 4.0 - Borderline High), (4.1 to 4.8 - High), (4.8 - Very High)"),
+                    gr.Number(label="High Density Lipoprotein", minimum=0, maximum=20, info="Patient's HDL level in mmol/L (<1.0 - Low), (1.0 to 1.5 - Desirable), (1.5 - High)"),
+                    gr.Number(label="Very Low Density Lipoprotein", minimum=0, maximum=20, info="Patient's VLDL in mmol/L"),
+                    gr.Number(label="Triglyceride", minimum=0, maximum=20, info="Patient's Triglyceride Level in mmol/L (1.69 to 2.25: Desirable)"),
+                    gr.Number(label="Creatinine", minimum=0, info="Patient's Creatinine level in mmol/L (Normal Range for Male Adult: 60 to 110) (Normal Range for Female Adult: 45 to 90 - Normal)"),
+                    gr.Number(label="Urea", minimum=0, maximum=20, info="Patient's Blood Urea Nitrogen in mmol/L")
+
+            ]
 
     with gr.Blocks(theme=gr.themes.Base(primary_hue=gr.themes.colors.orange, secondary_hue=gr.themes.colors.blue, neutral_hue=gr.themes.colors.slate,font=body_font), css=base_css) as block:
         gr.Markdown(top_css, elem_id=["md"])
@@ -72,33 +87,48 @@ try:
             
             with gr.Column():
                 with gr.Row():
-                    gender = gr.Radio(["Male", "Female"], label="Gender", scale=1)
+                    gender = gr.Radio(["Male", "Female"], label="Gender", scale=2, elem_id=['gender'], info="Gender of the Patient")
                 with gr.Row():
-                    age = gr.Number(label="Age", info="Age of the patient")
+                    age = gr.Number(label="Age", info="Age of the patient", scale=1)
                 with gr.Row():
                     height = gr.Number(label="Height", info="Height in centimeters")
+            with gr.Column():
                 with gr.Row():
                     weight = gr.Number(label="Weight", info="Weight in Kilograms")   
                 with gr.Row():
-                    bmi = gr.Number(label="BMI", interactive=False) 
+                    bmi = gr.Number(label="BMI", interactive=False, elem_id=['bmi'], info="Patient's Body Mass Index (18.5 - 24.9: Healthy Range)") 
                 with gr.Row():
-                    hba1c = gr.Number(label="HBA1C", minimum=0, maximum=15, info="Hemoglobin A1c test in precentage(%) (5.7% - Normal), (5.7 to 6.4% - Pre-diabetes), (6.4% - Diabetes)")
+                    div1 = gr.Label(show_label=False)
+        with gr.Row():
+            div2 = gr.Label(show_label=False)
+        
+        with gr.Row():
+            with gr.Column(): 
                 with gr.Row():
-                    urea = gr.Number(label="Urea", minimum=0, maximum=20, info="Patient's Blood Urea Nitrogen in mmol/L")
-                
-            with gr.Column():
-                with gr.Row():
-                    triglyceride = gr.Number(label="Triglyceride", minimum=0, maximum=20, info="Patient's Triglyceride Level in mmol/L (<1.69:Optimal), (1.69 to 2.25: Desirable), (2.26 to 5.64: High), (>5.65:Very High)")
-                with gr.Row():
-                    hdl = gr.Number(label="High Density Lipoprotein", minimum=0, maximum=20, info="Patient's HDL level in mmol/L (<1.0 - Low), (1.0 to 1.5 - Desirable), (1.5 - High)")
+                    unit = gr.Radio(choices=["mmol/L", "mg/dL"], value="mmol/L", label="Unit of measurement", info="Unit of measurement either milligrams per deciliter (mg/dL) or millimoles per litre (mmol/L)")                                         
                 with gr.Row():
                     cholesterol = gr.Number(label="Cholesterol", minimum=0, maximum=20, info="Total Cholesterol of patient in mmol/L (<5.2 - Desirable), (5.2 to 6.1 - Borderline High), (6.1 - High)")
                 with gr.Row():
                     ldl = gr.Number(label="Low Density Lipoprotein", minimum=0, maximum=20, info="Patient's LDL level in mmol/L (<2.6 - Optimal), (2.6 to 3.3 - Desirable), (3.4 to 4.0 - Borderline High), (4.1 to 4.8 - High), (4.8 - Very High)")
                 with gr.Row():
-                    vldl = gr.Number(label="Very Low Density Lipoprotein", minimum=0, maximum=20, info="Patient's VLDL in mmol/L")
+                    hdl = gr.Number(label="High Density Lipoprotein", minimum=0, maximum=20, info="Patient's HDL level in mmol/L (<1.0 - Low), (1.0 to 1.5 - Desirable), (1.5 - High)")
                 with gr.Row():
-                    creatinine = gr.Number(label="Creatinine", minimum=0, info="Patient's Creatinine level in mmol/L (Creatinine: male adult: 60 to 110 - Normal) (female adult: 45 to 90 - Normal)")
+                    vldl = gr.Number(label="Very Low Density Lipoprotein", minimum=0, maximum=20, info="Patient's VLDL in mmol/L")
+                      
+            with gr.Column():
+                with gr.Row():
+                    div3 = gr.Label(show_label=False)
+                with gr.Row():
+                    triglyceride = gr.Number(label="Triglyceride", minimum=0, maximum=20, info="Patient's Triglyceride Level in mmol/L (1.69 to 2.25: Desirable)")
+                with gr.Row():
+                    creatinine = gr.Number(label="Creatinine", minimum=0, info="Patient's Creatinine level in mmol/L (Normal Range for Male Adult: 60 to 110) (Normal Range for Female Adult: 45 to 90 - Normal)")
+                with gr.Row():
+                    hba1c = gr.Number(label="HBA1C", minimum=0, maximum=15, info="Hemoglobin A1c test in precentage(%) (5.7% - Normal), (5.7 to 6.4% - Pre-diabetes), (6.4% - Diabetes)")
+                with gr.Row():
+                    urea = gr.Number(label="Urea", minimum=0, maximum=20, info="Patient's Blood Urea Nitrogen in mmol/L")
+                
+                # on unit change
+                unit.change(fn=change_unit_measurement, inputs=unit, outputs=[cholesterol, ldl, hdl, vldl, triglyceride, creatinine, urea])
                 
                 # function to establish api endpoints
                 @gr.on(inputs=[age, weight, height], outputs=bmi)
@@ -143,11 +173,11 @@ try:
                 input_data = [urea, creatinine, hba1c, cholesterol, triglyceride, hdl,
                                 ldl, vldl, bmi, age, gender]
                 
-                with gr.Row():
-                    with gr.Column():
-                        gr.ClearButton(clear_data, value="Clear", elem_id=["clear"], size='lg')                     
-                    with gr.Column():
-                        button = gr.Button("Predict and Analyze", elem_id=["predict"], size='sm')
+        with gr.Row():
+            with gr.Column():
+                gr.ClearButton(clear_data, value="Clear", elem_id=["clear"], size='lg')                     
+            with gr.Column():
+                button = gr.Button("Predict and Analyze", elem_id=["predict"], size='lg')
                         
         with gr.Row():
             with gr.Column():

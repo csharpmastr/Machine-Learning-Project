@@ -4,9 +4,6 @@ import os
 import sys
 import pandas as pd
 import numpy as np
-import requests
-import json
-import httpx
 import pickle
 
 from scikeras.wrappers import KerasClassifier
