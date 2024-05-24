@@ -33,6 +33,14 @@ class DataIngestion:
         
     # perform data retrieval
     def initiate_data_ingestion(self):
+        """Function to retrieve data from the specified directory
+
+        Raises:
+            CustomException: For exception handling purposes
+
+        Returns:
+            data: File path of the training and testing data
+        """
         logging.info('Started Data Ingestion Method')
         
         try:

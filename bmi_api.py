@@ -16,6 +16,7 @@ class BMICalculationResponse(BaseModel):
     health: str
     healthy_bmi_range: str
 
+# function to categorize bmi
 def get_bmi_category(bmi):
     if bmi < 18.5:
         return "Underweight"
@@ -25,7 +26,8 @@ def get_bmi_category(bmi):
         return "Overweight"
     else:
         return "Obese"
-    
+
+# using POST to securely send data to the server
 @app.post("/calculate_bmi", response_model=BMICalculationResponse)
 def calculate_bmi(request: BMICalculationRequest):
     try:

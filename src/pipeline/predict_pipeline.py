@@ -60,7 +60,8 @@ def diabetes_prediction(urea: float,
                  VLDL: float,
                  BMI: float,
                  age: float,
-                 Gender: str):
+                 Gender: str,
+                 unit: bool):
     
     try:
         # check if any of the input is empty
@@ -68,6 +69,20 @@ def diabetes_prediction(urea: float,
                 tg is None, HDL is None, LDL is None, VLDL is None, BMI is None, Gender is None]):
             error_message = '<span style="color: red;font-size:25px;">Please fill in all the input fields.</span>'
             return error_message
+        
+        print("unit:", unit)
+        
+        # condition to check if unit of measurement is mmol/L or mg/dL, then perform conversion
+        if unit == "mg/dL":
+            # convert features with mg/dL to mmol/L, then round to nearest thousandths
+            chol = round(chol / 38.67, 3)
+            LDL = round(LDL / 38.67, 3)
+            HDL = round(HDL / 38.67, 3)
+            VLDL = round(VLDL / 38.67, 3)
+            urea = round(urea * 0.357, 3)
+            cr = round(cr * 0.0884, 3)
+                    
+            tg = round(tg / 88.57, 5)
         
         gender_M = 0
         gender_F = 0

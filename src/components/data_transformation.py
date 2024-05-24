@@ -29,11 +29,11 @@ class DataTransformation:
         self.data_transformation_config = DataTransformationConfig()
     
     def get_data_transformer_obj(self):
-        """This function is responsible to build the pipelines 
-           to preprocess the data
+        """Function responsible in building the pipelines to preprocess and 
+        transform the data
 
         Raises:
-            CustomException: Exception handling method to debug code easily
+            CustomException: For exception handling purposes
 
         Returns:
             preprocessor: The custom data preprocessor that will clean and transform
@@ -80,14 +80,15 @@ class DataTransformation:
     
     # initiate data transformation
     def initiate_data_transformation(self, train_path, test_path):
-        """_summary_
+        """Function to initiate the data transformation and processing by 
+        loading the preprocessor object
 
         Args:
             train_path (obj): Raw training data obtained from file path
             test_path (obj): Raw testing data obtained from file path
 
         Raises:
-            CustomException: _description_
+            CustomException: For exception handling purposes
 
         Returns:
             list: A list of object, training data of type array,

@@ -80,17 +80,6 @@ class ModelTrainer:
             y_test_reshape = np.argmax(y_test, axis=1)
             yhat_reshape = np.argmax(yhat, axis=1)
             
-            # print('meta_y shape:', meta_y.shape)
-            # print('yhat shape:', yhat.shape)
-            # print('ytest shape:', y_test.shape)
-            # print('yhat_reshape shape:', yhat_reshape.shape)
-            # print('y_test_reshape shape:', y_test_reshape.shape)
-            # print('yhat_reshape shape:', yhat_reshape.shape)
-            # print('yhat unique values', np.unique(yhat))
-            # print('ytest unique values', np.unique(y_test))
-            # print('yhat_reshape unique values', np.unique(yhat_reshape))
-            # print('y_test_reshape unique values', np.unique(y_test_reshape))
-            
             h_loss = hamming_loss(y_test_reshape, yhat_reshape)
             class_report = classification_report(y_test_reshape, yhat_reshape)
             f1 = f1_score(y_test_reshape, yhat_reshape, average = 'micro')
@@ -202,8 +191,23 @@ def get_base_models():
     
     except Exception as e:
         raise CustomException(e, sys)
-    
+
 def get_out_of_folds(x, y, models):
+    """Function to calculate base model's prediction that will be used for the 
+    meta learner's training
+
+    Args:
+        x (arr): feature variables of the training data
+        y (arr): target variable of the training data
+        models (list): list of base models
+
+    Raises:
+        CustomException: For exception handling purposes
+
+    Returns:
+        meta_x: base model's prediction on feature variable
+        meta_y: true labels on the training data
+    """
     try:
         # declare stratified kfold
         skf = StratifiedKFold(n_splits=9, shuffle=True, random_state=42)
@@ -253,6 +257,16 @@ def get_out_of_folds(x, y, models):
 
 # fit all base-models
 def fit_base_models(x, y, models):
+    """Function to train and fit the list of base models
+
+    Args:
+        x (arr): feature variables of the training data
+        y (arr): target variable of the training data
+        models (list): list of base models
+
+    Raises:
+        CustomException: For exception handling purposes
+    """
     try:
         y_flatten = np.argmax(y, axis=1)
         for model in models:
@@ -264,6 +278,16 @@ def fit_base_models(x, y, models):
 
 # evaluate list of models
 def evaluate_models(x, y, models):
+    """Function to evaluate base models on prediction unseen testing data
+
+    Args:
+        x (arr): feature variables of the testing data
+        y (arr): target variable of the testing data
+        models (list): list of trained base-models
+
+    Raises:
+        CustomException: For exception handling purposes
+    """
     try:
         # Convert one-hot encoded `y` to labels
         y_labels = np.argmax(y, axis=1)
@@ -284,6 +308,19 @@ def evaluate_models(x, y, models):
     
 # make predictions with the Stacked Model
 def meta_learner_predictions(x, models, meta_learner):
+    """Function to test the meta learning in predicting unseen testing data
+
+    Args:
+        x (arr): feature variables of the testing data
+        models (list): list of trained base-models
+        meta_learner (object): trained sci-keras model
+
+    Raises:
+        CustomException: For exception handling purposes
+
+    Returns:
+        prediction: Prediction of the meta learner
+    """
     try:
         meta_x = list()
         
@@ -306,8 +343,22 @@ def meta_learner_predictions(x, models, meta_learner):
         raise CustomException(e, sys)
 
 def build_fit_neural_network_model(meta_x, meta_y):
+    """Function to build, wrap, compile, and train the neural network 
+    as the meta learner of the stacking ensemble algorithm
+
+    Args:
+        meta_x (arr): base model's prediction
+        meta_y (arr): true labels on the training data
+
+    Raises:
+        CustomException: For exception handling purposes
+
+    Returns:
+        keras_clf: meta learner that will be used for compiling base model's prediction
+        to create its own prediction
+    """
     try:
-        # Define your neural network
+        # Definition of the neural network
         nn_model = tf.keras.Sequential([
             keras.layers.Input(shape=(meta_x.shape[1],)),
             keras.layers.Dense(128, activation='relu'),  # First hidden layer   
@@ -347,6 +398,7 @@ def build_fit_neural_network_model(meta_x, meta_y):
         
         logging.info('Neural Network meta learner created')
         
+        # split data to have a validation set
         x_train, x_val, y_train, y_val = train_test_split(meta_x, meta_y, test_size=0.2, random_state=65)
         
         early_stopping = EarlyStopping(patience=10, monitor='val_accuracy', mode='max')
